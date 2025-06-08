@@ -1,56 +1,43 @@
 import nidaqmx
+import numpy as np
 import matplotlib.pyplot as plt
 from collections import deque
 import time
 import csv
 from datetime import datetime
 
-# กำหนดค่าพื้นฐาน
-channel_name = "Dev1/ai0"  
-log_file = "alcohol_log.csv"
-sampling_interval = 0.1  # หน่วยเป็นวินาที (10 Hz)
-max_points = 100  # จำนวนจุดบนกราฟ
+#setup parameters
+DAQ_channel = "Dev1/ai0:2"
+log_file = "sensor_data_multi.csv"
+Sensor_names = ["Voltage(MQ-3b", "Voltage(MQ-3)", "Voltage(MQ-9B)"]
+# graph parameters (ตั้งค่าที่หลัง sample rate = 12sec with 100Hz)
+Max_graph_points = 1000
+Sample_rate = 1000  # Hz
 
-# เตรียมไฟล์ CSV
-with open(log_file, mode='w', newline='') as file:
+# setup CSV file
+csv_header = ["Timestamp"] + Sensor_names
+with open(log_file, mode='w', newline='utf-8') as file:
     writer = csv.writer(file)
-    writer.writerow(["Timestamp", "Voltage (V)"])
+    writer.writerow(csv_header)
 
-# เตรียมกราฟ
-data = deque([0] * max_points, maxlen=max_points)
-plt.ion()
-fig, ax = plt.subplots()
-line, = ax.plot(data)
-ax.set_ylim(0, 5)
-ax.set_title("Alcohol Sensor (MQ-3B) - Real-Time")
-ax.set_ylabel("Voltage (V)")
-ax.set_xlabel("Sample")
+print(f"ไฟล์ CSV ' {log_file}' ถูกสร้างขึ้นแล้ว")
 
-# อ่านข้อมูลจาก DAQ และบันทึก
-with nidaqmx.Task() as task:
-    task.ai_channels.add_ai_voltage_chan(channel_name)
+# graph setup
+data_deque = [deque([0] * Max_graph_points, maxlen=Max_graph_points) for _ in range(len(Sensor_names))]
+plt.ion() 
+fig, ax =  plt.subplots(figsize=(12, 7))   
 
-    while True:
-        try:
-            value = task.read()
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+lines = []
+colors = ['dodgerblue', 'red', 'green']  
+for i in range(len(Sensor_names)):
+        line, = ax.plot(np.arange(Max_graph_points), data_deque[i], color=colors[i], label=Sensor_names[i])
+        lines.append(line)
 
-            print(f"[{timestamp}] Value: {value:.3f} V")
+ax.set_ylim(0, 5)  # Adjust based on expected sensor values
+ax.set_title("Real-time Sensor readings", fontsize=16)
+ax.set_ylabel("Voltage (V)", fontsize=14)
+ax.set_xlabel("Sample Number", fontsize=14)
+ax.legend()
+ax.grid(True)
 
-            # บันทึกลง CSV
-            with open(log_file, mode='a', newline='') as file:
-                writer = csv.writer(file)
-                writer.writerow([timestamp, value])
 
-            # อัปเดตกกราฟ
-            data.append(value)
-            line.set_ydata(data)
-            line.set_xdata(range(len(data)))
-            fig.canvas.draw()
-            fig.canvas.flush_events()
-
-            time.sleep(sampling_interval)
-
-        except KeyboardInterrupt:
-            print("หยุดการเก็บข้อมูล")
-            break
