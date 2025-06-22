@@ -27,7 +27,7 @@ active_duration = 60 #sec
 rest_duration = 30 #sec
 
 #setting smoothing parameter
-smoothing_window_size = 15 #จำนวนข้อมูลที่นำมาคำนวนข้อมูลที่จะทำ smoothing
+smoothing_window_size = 30 #จำนวนข้อมูลที่นำมาคำนวนข้อมูลที่จะทำ smoothing
 
 #function processing
 def process_and_save_data(raw_data_list, header):
@@ -105,7 +105,6 @@ try:
                         raw_data_for_processing.append(data_row)
                 print(f"  รอบที่ {cycle_count}: กำลังเก็บข้อมูล... {((i + 1) * sampling_per_chuck) / sampling_rate:.0f} / {active_duration} วินาที")
         
-        # calculation
         if raw_data_for_processing:
             process_and_save_data(raw_data_for_processing, header=csv_header) 
 
