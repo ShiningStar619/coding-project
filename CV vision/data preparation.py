@@ -1,60 +1,62 @@
 import cv2
-import numpy as np
 import os
-#parameter
-input = '_DSC0156.JPG'
-output_folder = 'เมล็ดดีสั้นกลม'
+import numpy as np
 
-#funtions
-print("start processing")
-if not os.path.exists(output_folder ):
-    os.makedirs(output_folder )
-    print(f"genertate folder :'{output_folder }")
+# --- การตั้งค่าที่ปรับได้ ---
+IMAGE_PATH = 'D:/year 5/coding project/CV vision/dataset/1_before_preparation/short&round_folder_raw/short&round2.JPG' 
+OUTPUT_FOLDER = 'D:/year 5/coding project/CV vision/dataset/2_after_preparation'
+MIN_SEED_AREA = 150                 # ขนาดพื้นที่ขั้นต่ำของเมล็ด (Pixel) เพื่อกรอง Noise
+PADDING = 110                        # ระยะขอบ (padding) ที่จะเพิ่มรอบๆ เมล็ด (pixel)
 
-origin = cv2.imread(input)
-if origin is None:
-    print(f"!error '{input}")
-    print("pls input your file in a same folder")
-else:
-    print(f"load '{input}' complete... prepare for process")
-    final_result=origin.copy()
+try:
+    with open(IMAGE_PATH, 'rb') as f:
+        nparr = np.frombuffer(f.read(), np.uint8)
+        original_image = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+except FileNotFoundError:
+    print(f"หาไฟล์ไม่เจอ: {IMAGE_PATH}")
+    exit()
 
-    #gray scale + Enhanced
-    gray_img = cv2.cvtColor(origin, cv2.COLOR_BGR2GRAY)
-    enhanced_img = cv2.equalizeHist(gray_img)
-    print(' ...comfig img quaity (Enhanced image) 👍 ')
+gray_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
+blurred_image = cv2.GaussianBlur(gray_image, (7, 7), 0)
 
-    #Segmentation
-    ret, mask = cv2.threshold(enhanced_img, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU) #// THRESH_BINART is black,white , THRESH_OTSU is auto-mode for find point of division between object and background
-    print("Mask complete")
+# แปลงเป็นภาพขาว-ดำ (Binary) ด้วย Adaptive Thresholding ซึ่งทำงานได้ดีกับแสงที่ไม่สม่ำเสมอ
+binary_image = cv2.adaptiveThreshold(blurred_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,  cv2.THRESH_BINARY_INV, 15, 4)
 
-    #find & crop img
-    contours, hierarchy = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-    print(f"finding mask {len(contours)}")
+# 4. ใช้ Morphological Operations เพื่อปรับปรุงภาพ Binary
+# สร้าง Kernel
+kernel = np.ones((3, 3), np.uint8)
+# Erosion: กัดเซาะขอบ เพื่อช่วยแยกวัตถุที่ติดกัน
+eroded_image = cv2.erode(binary_image, kernel, iterations=1)
+# Dilation: ขยายวัตถุกลับมาให้มีขนาดใกล้เคียงเดิม
+dilated_image = cv2.dilate(eroded_image, kernel, iterations=1)
 
-#Features
-object_count = 0
+# 5. ค้นหา Contours (รูปร่างของเมล็ด)
+contours, _ = cv2.findContours(dilated_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+print(f"ตรวจพบวัตถุเบื้องต้น {len(contours)} ชิ้น...")
+
+# 6. วนลูปเพื่อตัดและบันทึกแต่ละเมล็ด
+saved_count = 0
 for contour in contours:
-    if cv2.contourArea(contours) > 100: #if area img > 100pixel can continue
+    # กรองวัตถุที่มีขนาดเล็กเกินไปออก
+    if cv2.contourArea(contour) > MIN_SEED_AREA:
+        # คำนวณกรอบสี่เหลี่ยมรอบวัตถุ (Bounding Box)
         x, y, w, h = cv2.boundingRect(contour)
-        cropped_object = origin[y:y+h, x:x+w]
-        output_path = os.path.join(output_folder, f"seed_{object_count}.jpg")
-        cv2.imwrite(output_path, cropped_object)
-        cv2.rectangle(final_result, (x,y), (x+w, y+h), (0, 255, 0), 2)
-        object_count += 1
-    print(f" crop and save img {object_count}.jpg in '{output_folder}' 👌")
 
-#display & clearup
-final_result_text = final_result.copy()
-cv2.putText(final_result_text, f"Found {object_count} seeds", (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
-cv2.imshow("1.Original img", origin)
-cv2.imshow("2.Enhanced img", enhanced_img)
-cv2.imshow("3.Mask", mask)
-cv2.imshow("4.Final result", final_result_text)
+        # เพิ่ม Padding เพื่อให้ภาพไม่ชิดขอบเกินไป
+        # และตรวจสอบไม่ให้พิกัดเกินขอบเขตของภาพต้นฉบับ
+        y1 = max(0, y - PADDING)
+        y2 = min(original_image.shape[0], y + h + PADDING)
+        x1 = max(0, x - PADDING)
+        x2 = min(original_image.shape[1], x + w + PADDING)
 
-print("\n--- all procees is complete")
-print("all img is save")
-print("Press any button on the image window to close all programs.")
+        # ตัดภาพจาก 'รูปสีต้นฉบับ'
+        cropped_seed = original_image[y1:y2, x1:x2]
 
-cv2.waitKey(0)
-cv2.destroyAllWindows()
+        # บันทึกไฟล์ภาพที่ตัดแล้ว
+        saved_count += 1
+        output_path = os.path.join(OUTPUT_FOLDER, f'เมล็ดสีดำ(ดี)_{saved_count}.jpg') #กำหนดชื่อไฟล์ที่จะ save
+        is_success, im_buf_arr = cv2.imencode(".jpg", cropped_seed)
+        im_buf_arr.tofile(output_path)
+
+print(f"ดำเนินการเสร็จสิ้น! บันทึกเมล็ดพืชแล้ว {saved_count} รูป ในโฟลเดอร์ '{OUTPUT_FOLDER}'")
