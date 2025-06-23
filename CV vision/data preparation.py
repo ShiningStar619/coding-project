@@ -3,10 +3,10 @@ import os
 import numpy as np
 
 # --- การตั้งค่าที่ปรับได้ ---
-IMAGE_PATH = 'D:/year 5/coding project/CV vision/dataset/1_before_preparation/short&round_folder_raw/short&round2.JPG' 
-OUTPUT_FOLDER = 'D:/year 5/coding project/CV vision/dataset/2_after_preparation'
+IMAGE_PATH = 'CV vision/dataset/1_before_preparation/bad/เมล็ดงอกแตก/JPG/เมล็ดงอกแตก_JPG(1).JPG' 
+OUTPUT_FOLDER = 'D:/year 5/coding project/CV vision/dataset/2_after_preparation/bad/เมล็ดงอกแตก/set 1'
 MIN_SEED_AREA = 150                 # ขนาดพื้นที่ขั้นต่ำของเมล็ด (Pixel) เพื่อกรอง Noise
-PADDING = 110                        # ระยะขอบ (padding) ที่จะเพิ่มรอบๆ เมล็ด (pixel)
+PADDING = 120                        # ระยะขอบ (padding) ที่จะเพิ่มรอบๆ เมล็ด (pixel)
 
 try:
     with open(IMAGE_PATH, 'rb') as f:
@@ -17,22 +17,16 @@ except FileNotFoundError:
     exit()
 
 gray_image = cv2.cvtColor(original_image, cv2.COLOR_BGR2GRAY)
-blurred_image = cv2.GaussianBlur(gray_image, (7, 7), 0)
 
-# แปลงเป็นภาพขาว-ดำ (Binary) ด้วย Adaptive Thresholding ซึ่งทำงานได้ดีกับแสงที่ไม่สม่ำเสมอ
+blurred_image = cv2.GaussianBlur(gray_image, (7, 7), 0)
 binary_image = cv2.adaptiveThreshold(blurred_image, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,  cv2.THRESH_BINARY_INV, 15, 4)
 
-# 4. ใช้ Morphological Operations เพื่อปรับปรุงภาพ Binary
-# สร้าง Kernel
 kernel = np.ones((3, 3), np.uint8)
-# Erosion: กัดเซาะขอบ เพื่อช่วยแยกวัตถุที่ติดกัน
 eroded_image = cv2.erode(binary_image, kernel, iterations=1)
-# Dilation: ขยายวัตถุกลับมาให้มีขนาดใกล้เคียงเดิม
 dilated_image = cv2.dilate(eroded_image, kernel, iterations=1)
 
 # 5. ค้นหา Contours (รูปร่างของเมล็ด)
 contours, _ = cv2.findContours(dilated_image, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-
 print(f"ตรวจพบวัตถุเบื้องต้น {len(contours)} ชิ้น...")
 
 # 6. วนลูปเพื่อตัดและบันทึกแต่ละเมล็ด
@@ -43,20 +37,27 @@ for contour in contours:
         # คำนวณกรอบสี่เหลี่ยมรอบวัตถุ (Bounding Box)
         x, y, w, h = cv2.boundingRect(contour)
 
-        # เพิ่ม Padding เพื่อให้ภาพไม่ชิดขอบเกินไป
-        # และตรวจสอบไม่ให้พิกัดเกินขอบเขตของภาพต้นฉบับ
         y1 = max(0, y - PADDING)
         y2 = min(original_image.shape[0], y + h + PADDING)
         x1 = max(0, x - PADDING)
         x2 = min(original_image.shape[1], x + w + PADDING)
 
-        # ตัดภาพจาก 'รูปสีต้นฉบับ'
         cropped_seed = original_image[y1:y2, x1:x2]
 
         # บันทึกไฟล์ภาพที่ตัดแล้ว
         saved_count += 1
-        output_path = os.path.join(OUTPUT_FOLDER, f'เมล็ดสีดำ(ดี)_{saved_count}.jpg') #กำหนดชื่อไฟล์ที่จะ save
+        output_path = os.path.join(OUTPUT_FOLDER, f'เมล็ดงอกแตก_{saved_count}.jpg') #กำหนดชื่อไฟล์ที่จะ save
         is_success, im_buf_arr = cv2.imencode(".jpg", cropped_seed)
         im_buf_arr.tofile(output_path)
 
 print(f"ดำเนินการเสร็จสิ้น! บันทึกเมล็ดพืชแล้ว {saved_count} รูป ในโฟลเดอร์ '{OUTPUT_FOLDER}'")
+
+cv2.namedWindow("1. Original Image", cv2.WINDOW_NORMAL)
+cv2.namedWindow("2. Grayscale Image", cv2.WINDOW_NORMAL)
+cv2.namedWindow("3. Final Binary Image (What the computer sees)", cv2.WINDOW_NORMAL)
+
+cv2.imshow("1. Original Image", original_image)
+cv2.imshow("2. Grayscale Image", gray_image)
+cv2.imshow("3. Final Binary Image (What the computer sees)", dilated_image)
+cv2.waitKey(0)  
+cv2.destroyAllWindows()
