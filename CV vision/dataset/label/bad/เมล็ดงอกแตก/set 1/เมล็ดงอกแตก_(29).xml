@@ -1,0 +1,26 @@
+<annotation>
+	<folder>set 1</folder>
+	<filename>เมล็ดงอกแตก_(29).jpg</filename>
+	<path>D:\year 5\coding project\CV vision\dataset\raw data\2_after_preparation\bad\เมล็ดงอกแตก\set 1\เมล็ดงอกแตก_(29).jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>334</width>
+		<height>351</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>เมล็ดงอกแตก</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>90</xmin>
+			<ymin>12</ymin>
+			<xmax>290</xmax>
+			<ymax>271</ymax>
+		</bndbox>
+	</object>
+</annotation>

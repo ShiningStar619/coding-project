@@ -1,0 +1,26 @@
+<annotation>
+	<folder>set 2</folder>
+	<filename>เมล็ดปลายพู่กัน_(123).jpg</filename>
+	<path>D:\year 5\coding project\CV vision\dataset\raw data\2_after_preparation\bad\เมล็ดปลายพู่กัน\set 2\เมล็ดปลายพู่กัน_(123).jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>435</width>
+		<height>324</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>เมล้ดปลายพู่กัน</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>119</xmin>
+			<ymin>79</ymin>
+			<xmax>394</xmax>
+			<ymax>206</ymax>
+		</bndbox>
+	</object>
+</annotation>

@@ -1,0 +1,26 @@
+<annotation>
+	<folder>set 2</folder>
+	<filename>เมล็ดดีเรียวยาว_(73).jpg</filename>
+	<path>D:\year 5\coding project\CV vision\dataset\raw data\2_after_preparation\good\เมล็ดดีเรียวยาว\set 2\เมล็ดดีเรียวยาว_(73).jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>373</width>
+		<height>280</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>เมล็ดดีเรียวยาว</name>
+		<pose>Unspecified</pose>
+		<truncated>1</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>87</xmin>
+			<ymin>118</ymin>
+			<xmax>373</xmax>
+			<ymax>191</ymax>
+		</bndbox>
+	</object>
+</annotation>

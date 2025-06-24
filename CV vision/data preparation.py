@@ -3,8 +3,8 @@ import os
 import numpy as np
 
 # --- การตั้งค่าที่ปรับได้ ---
-IMAGE_PATH = 'CV vision/dataset/1_before_preparation/bad/เมล็ดงอกแตก/JPG/เมล็ดงอกแตก_JPG(1).JPG' 
-OUTPUT_FOLDER = 'D:/year 5/coding project/CV vision/dataset/2_after_preparation/bad/เมล็ดงอกแตก/set 1'
+IMAGE_PATH = 'D:/year 5/coding project/CV vision/dataset/raw data/1_before_preparation/good/เมล็ดดีเรียวยาว/JPG/เมล็ดดีเรียวยาว_JPG(4).JPG' 
+OUTPUT_FOLDER = 'D:/year 5/coding project/CV vision/dataset/raw data/2_after_preparation/good/เมล็ดดีเรียวยาว/set 3'
 MIN_SEED_AREA = 150                 # ขนาดพื้นที่ขั้นต่ำของเมล็ด (Pixel) เพื่อกรอง Noise
 PADDING = 120                        # ระยะขอบ (padding) ที่จะเพิ่มรอบๆ เมล็ด (pixel)
 
@@ -46,7 +46,7 @@ for contour in contours:
 
         # บันทึกไฟล์ภาพที่ตัดแล้ว
         saved_count += 1
-        output_path = os.path.join(OUTPUT_FOLDER, f'เมล็ดงอกแตก_{saved_count}.jpg') #กำหนดชื่อไฟล์ที่จะ save
+        output_path = os.path.join(OUTPUT_FOLDER, f'เมล็ดดีเรียวยาว_{saved_count}.jpg') #กำหนดชื่อไฟล์ที่จะ save
         is_success, im_buf_arr = cv2.imencode(".jpg", cropped_seed)
         im_buf_arr.tofile(output_path)
 

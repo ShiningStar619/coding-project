@@ -1,0 +1,26 @@
+<annotation>
+	<folder>set 2</folder>
+	<filename>เเมล็ดดีติดกัน_(101).jpg</filename>
+	<path>D:\year 5\coding project\CV vision\dataset\raw data\2_after_preparation\good\เมล็ดดีติดกัน\set 2\เเมล็ดดีติดกัน_(101).jpg</path>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>371</width>
+		<height>283</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>เมล็ดดีติดกัน</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>45</xmin>
+			<ymin>89</ymin>
+			<xmax>297</xmax>
+			<ymax>175</ymax>
+		</bndbox>
+	</object>
+</annotation>
